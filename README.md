@@ -67,7 +67,7 @@ For a more accessible entry point aimed at younger learners, see the companion t
 
 ## Demo
 Click here to try out:
-[Glasbox Demo](https://www.mustafa-bilgin.de/neuronale-netze-2)
+[Glassbox Demo](https://www.mustafa-bilgin.de/neuronale-netze-2)
 ---
  
 ## License
