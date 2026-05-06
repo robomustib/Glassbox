@@ -1,0 +1,858 @@
+<script>
+(function(){
+  var fontId = 'gbnn-google-fonts';
+  if (!document.getElementById(fontId)) {
+    var l = document.createElement('link');
+    l.id   = fontId;
+    l.rel  = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap';
+    document.head.appendChild(l);
+  }
+})();
+</script>
+
+<style>
+#gbnn-root {
+  --gbnn-bg:       #ffffff;
+  --gbnn-surface:  #f8f9fa;
+  --gbnn-surface2: #f0f2f5;
+  --gbnn-border:   #d1d5db;
+  --gbnn-green:    #059669;
+  --gbnn-red:      #dc2626;
+  --gbnn-blue:     #2563eb;
+  --gbnn-yellow:   #d97706;
+  --gbnn-text:     #1f2937;
+  --gbnn-muted:    #6b7280;
+  --gbnn-mono:     'IBM Plex Mono', monospace;
+  --gbnn-sans:     'IBM Plex Sans', sans-serif;
+  all: initial;
+  display: block;
+  box-sizing: border-box;
+  font-family: var(--gbnn-sans);
+  color: var(--gbnn-text);
+  background: var(--gbnn-bg);
+  border: 1px solid var(--gbnn-border);
+  border-radius: 12px;
+  padding: 36px;
+  max-width: 980px;
+  margin: 24px auto;
+  line-height: 1.4;
+}
+
+#gbnn-root *, #gbnn-root *::before, #gbnn-root *::after {
+  box-sizing: border-box;
+}
+
+.gbnn-header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.gbnn-header h2 {
+  font-family: var(--gbnn-mono);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gbnn-text);
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  border: none;
+  background: none;
+  margin: 0; padding: 0;
+}
+.gbnn-version {
+  font-family: var(--gbnn-mono);
+  font-size: 0.68rem;
+  color: var(--gbnn-muted);
+  background: var(--gbnn-surface2);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--gbnn-border);
+  white-space: nowrap;
+}
+
+.gbnn-task-box {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-left: 4px solid var(--gbnn-yellow);
+  border-radius: 8px;
+  padding: 16px 22px 16px 20px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--gbnn-text);
+}
+.gbnn-task-label {
+  font-family: var(--gbnn-mono);
+  font-size: 0.68rem;
+  color: var(--gbnn-yellow);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 600;
+}
+.gbnn-task-box b { color: var(--gbnn-yellow); font-weight: 600; }
+
+.gbnn-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 310px;
+  gap: 20px;
+}
+@media (max-width: 700px) {
+  .gbnn-main-grid { grid-template-columns: 1fr; }
+}
+
+.gbnn-net-panel {
+  background: var(--gbnn-surface);
+  border: 1px solid var(--gbnn-border);
+  border-radius: 10px;
+  padding: 28px 28px 28px 28px;
+}
+.gbnn-net-title {
+  font-family: var(--gbnn-mono);
+  font-size: 0.68rem;
+  color: var(--gbnn-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.gbnn-net-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gbnn-border);
+}
+
+.gbnn-canvas {
+  position: relative;
+  height: 320px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid var(--gbnn-border);
+  margin-bottom: 20px;
+  overflow: visible;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+  padding: 16px;
+}
+.gbnn-canvas svg {
+  top: 0; left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+.gbnn-layers-row {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+  padding: 12px 36px;
+  position: relative;
+  z-index: 2;
+}
+.gbnn-layer-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+}
+.gbnn-layer-label {
+  position: absolute;
+  bottom: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--gbnn-mono);
+  font-size: 0.58rem;
+  color: var(--gbnn-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.gbnn-neuron {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gbnn-border);
+  display: flex; align-items: center; justify-content: center;
+  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.22s ease;
+  position: relative;
+  z-index: 3;
+  cursor: default;
+  user-select: none;
+  color: var(--gbnn-text);
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.gbnn-neuron.gbnn-input {
+  cursor: pointer;
+  border-color: var(--gbnn-blue);
+  color: var(--gbnn-blue);
+  font-size: 1.15rem;
+}
+.gbnn-neuron.gbnn-input:hover {
+  background: #eff6ff;
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+.gbnn-neuron.gbnn-input.gbnn-active {
+  background: var(--gbnn-blue);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(37,99,235,0.2);
+  transform: scale(1.1);
+}
+.gbnn-neuron.gbnn-hidden {
+  font-family: var(--gbnn-mono);
+  font-size: 0.62rem;
+  color: var(--gbnn-muted);
+  border-color: var(--gbnn-border);
+  background: var(--gbnn-surface2);
+}
+.gbnn-neuron.gbnn-hidden.gbnn-firing {
+  border-color: var(--gbnn-green);
+  color: var(--gbnn-green);
+  background: #ecfdf5;
+  box-shadow: 0 0 0 3px rgba(5,150,105,0.15);
+}
+.gbnn-neuron.gbnn-output {
+  font-size: 1.15rem;
+  color: var(--gbnn-muted);
+  border-color: var(--gbnn-border);
+  background: var(--gbnn-surface2);
+  opacity: 0.5;
+}
+.gbnn-neuron.gbnn-output.gbnn-winner {
+  border-color: var(--gbnn-green);
+  color: #fff;
+  background: var(--gbnn-green);
+  opacity: 1;
+  box-shadow: 0 0 0 4px rgba(5,150,105,0.2);
+}
+.gbnn-neuron.gbnn-output.gbnn-active-out { opacity: 0.75; }
+
+.gbnn-legend-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.7rem;
+  color: var(--gbnn-muted);
+  margin-bottom: 16px;
+}
+.gbnn-legend-item { display: flex; align-items: center; gap: 6px; }
+.gbnn-legend-line { width: 20px; height: 3px; border-radius: 2px; }
+
+.gbnn-feedback-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+  border-top: 1px solid var(--gbnn-border);
+}
+.gbnn-status {
+  font-family: var(--gbnn-mono);
+  font-size: 0.78rem;
+  flex: 1;
+  min-width: 120px;
+  color: var(--gbnn-text);
+}
+.gbnn-btn-group {
+  display: flex;
+  gap: 8px;
+  visibility: hidden;
+}
+.gbnn-btn {
+  padding: 9px 16px;
+  font-family: var(--gbnn-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  border: none;
+  letter-spacing: 0.3px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.gbnn-btn:active { transform: scale(0.96); }
+.gbnn-btn-correct { background: var(--gbnn-green); color: #fff; }
+.gbnn-btn-wrong   { background: var(--gbnn-red);   color: #fff; }
+.gbnn-btn-reset   {
+  background: #ffffff;
+  color: var(--gbnn-muted);
+  border: 1px solid var(--gbnn-border);
+}
+.gbnn-btn-correct:hover { background: #047857; }
+.gbnn-btn-wrong:hover   { background: #b91c1c; }
+.gbnn-btn-reset:hover   { background: var(--gbnn-surface2); }
+
+.gbnn-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.gbnn-panel {
+  background: var(--gbnn-surface);
+  border: 1px solid var(--gbnn-border);
+  border-radius: 10px;
+  padding: 20px;
+}
+.gbnn-panel-title {
+  font-family: var(--gbnn-mono);
+  font-size: 0.63rem;
+  color: var(--gbnn-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.gbnn-panel-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gbnn-border);
+}
+
+.gbnn-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.gbnn-stat-item {
+  background: #ffffff;
+  border: 1px solid var(--gbnn-border);
+  border-radius: 8px;
+  padding: 14px 12px;
+  text-align: center;
+}
+.gbnn-stat-val {
+  font-family: var(--gbnn-mono);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gbnn-green);
+  display: block;
+  line-height: 1.2;
+}
+.gbnn-stat-val.gbnn-red { color: var(--gbnn-red); }
+.gbnn-stat-label {
+  font-size: 0.62rem;
+  color: var(--gbnn-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  display: block;
+}
+
+.gbnn-weight-grid { display: grid; gap: 7px; }
+.gbnn-weight-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--gbnn-mono);
+  font-size: 0.7rem;
+}
+.gbnn-w-label { color: var(--gbnn-muted); width: 86px; flex-shrink: 0; font-size: 0.68rem; }
+.gbnn-w-bar-bg {
+  flex: 1;
+  height: 13px;
+  background: #ffffff;
+  border-radius: 3px;
+  position: relative;
+  border: 1px solid var(--gbnn-border);
+  overflow: hidden;
+}
+.gbnn-w-bar-fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 2px;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.gbnn-w-midline {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--gbnn-border);
+}
+.gbnn-w-val   { width: 46px; text-align: right; flex-shrink: 0; font-size: 0.66rem; }
+.gbnn-w-delta { width: 54px; text-align: right; flex-shrink: 0; font-size: 0.63rem; }
+
+.gbnn-explain {
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid var(--gbnn-border);
+  padding: 16px;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  min-height: 64px;
+  color: var(--gbnn-text);
+}
+.gbnn-explain .gbnn-hl   { color: var(--gbnn-green); font-weight: 600; }
+.gbnn-explain .gbnn-warn { color: var(--gbnn-red);   font-weight: 600; }
+
+.gbnn-log {
+  background: #ffffff;
+  border: 1px solid var(--gbnn-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-family: var(--gbnn-mono);
+  font-size: 0.63rem;
+  color: var(--gbnn-muted);
+  max-height: 80px;
+  overflow-y: auto;
+  line-height: 1.8;
+}
+.gbnn-log-ok   { color: var(--gbnn-green); }
+.gbnn-log-err  { color: var(--gbnn-red); }
+.gbnn-log-info { color: var(--gbnn-blue); }
+</style>
+
+<div id="gbnn-root">
+
+  <div class="gbnn-header">
+    <h2>⬡ Glassbox Network</h2>
+    <span class="gbnn-version">v2.0 · Educational Learning Tool</span>
+  </div>
+
+  <div class="gbnn-task-box">
+    <span class="gbnn-task-label">🎯 Learning Task</span>
+    Click a shape on the left. The network makes a <b>prediction</b> – can you tell which shape it picks?
+    Confirm with <b>"Correct ✓"</b> or correct it with <b>"Wrong ✗"</b>.
+    Watch the right panel: <b>which connection weights change?</b> Why do some get stronger while others weaken?
+  </div>
+
+  <div class="gbnn-main-grid">
+
+    <div class="gbnn-net-panel">
+      <div class="gbnn-net-title">Network Architecture · 5 → 3 → 5</div>
+      <div class="gbnn-canvas" id="gbnn-canvas">
+        <svg id="gbnn-svg"></svg>
+        <div class="gbnn-layers-row">
+          <div class="gbnn-layer-col" id="gbnn-input-col">
+            <span class="gbnn-layer-label">Input</span>
+          </div>
+          <div class="gbnn-layer-col" id="gbnn-hidden-col">
+            <span class="gbnn-layer-label">Hidden</span>
+          </div>
+          <div class="gbnn-layer-col" id="gbnn-output-col">
+            <span class="gbnn-layer-label">Output</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gbnn-legend-row">
+        <div class="gbnn-legend-item">
+          <div class="gbnn-legend-line" style="background:#059669;"></div>
+          Weight &gt; 0 (Excitation)
+        </div>
+        <div class="gbnn-legend-item">
+          <div class="gbnn-legend-line" style="background:#dc2626;"></div>
+          Weight &lt; 0 (Inhibition)
+        </div>
+        <div class="gbnn-legend-item">
+          <div class="gbnn-legend-line" style="background:#059669; height:6px;"></div>
+          Thickness = Signal flow
+        </div>
+      </div>
+
+      <div class="gbnn-feedback-row">
+        <div class="gbnn-status" id="gbnn-status">Select a shape…</div>
+        <div class="gbnn-btn-group" id="gbnn-btn-group">
+          <button class="gbnn-btn gbnn-btn-wrong"   id="gbnn-btn-wrong">Wrong ✗</button>
+          <button class="gbnn-btn gbnn-btn-correct"  id="gbnn-btn-correct">Correct ✓</button>
+        </div>
+        <button class="gbnn-btn gbnn-btn-reset" id="gbnn-btn-reset">↺ Reset</button>
+      </div>
+    </div>
+
+    <div class="gbnn-right-col">
+
+      <div class="gbnn-panel">
+        <div class="gbnn-panel-title">Training Progress</div>
+        <div class="gbnn-stats-grid">
+          <div class="gbnn-stat-item">
+            <span class="gbnn-stat-val" id="gbnn-stat-correct">0</span>
+            <span class="gbnn-stat-label">Correct</span>
+          </div>
+          <div class="gbnn-stat-item">
+            <span class="gbnn-stat-val gbnn-red" id="gbnn-stat-wrong">0</span>
+            <span class="gbnn-stat-label">Corrections</span>
+          </div>
+          <div class="gbnn-stat-item">
+            <span class="gbnn-stat-val" id="gbnn-stat-trials">0</span>
+            <span class="gbnn-stat-label">Attempts</span>
+          </div>
+          <div class="gbnn-stat-item">
+            <span class="gbnn-stat-val" id="gbnn-stat-acc">—</span>
+            <span class="gbnn-stat-label">Accuracy</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="gbnn-panel">
+        <div class="gbnn-panel-title">Weights · Input → Hidden</div>
+        <div class="gbnn-weight-grid" id="gbnn-weights"></div>
+      </div>
+
+      <div class="gbnn-panel">
+        <div class="gbnn-panel-title">What is happening?</div>
+        <div class="gbnn-explain" id="gbnn-explain">
+          Select a shape on the left to observe the signal flow.
+        </div>
+      </div>
+
+      <div class="gbnn-panel">
+        <div class="gbnn-panel-title">Training Log</div>
+        <div class="gbnn-log" id="gbnn-log">
+          <span class="gbnn-log-info">» System ready.</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var SHAPES      = ["■","●","▲","♦","★"];
+  var SHAPE_NAMES = ["Square","Circle","Triangle","Diamond","Star"];
+  var H  = 3;
+  var LR = 0.4;
+
+  var W1, W2, W1prev, W2prev;
+  var lastIdx = -1;
+  var hActs = [], oActs = [];
+  var stats = { correct: 0, wrong: 0, trials: 0 };
+
+  var sigmoid = function(x) {
+    x = Math.max(-10, Math.min(10, x));
+    return 1 / (1 + Math.exp(-x));
+  };
+
+  var $ = function(id) { return document.getElementById(id); };
+
+  var svgEl      = $('gbnn-svg');
+  var canvasEl   = $('gbnn-canvas');
+  var inputCol   = $('gbnn-input-col');
+  var hiddenCol  = $('gbnn-hidden-col');
+  var outputCol  = $('gbnn-output-col');
+  var statusEl   = $('gbnn-status');
+  var btnGroup   = $('gbnn-btn-group');
+  var btnCorrect = $('gbnn-btn-correct');
+  var btnWrong   = $('gbnn-btn-wrong');
+  var btnReset   = $('gbnn-btn-reset');
+  var explainEl  = $('gbnn-explain');
+  var logEl      = $('gbnn-log');
+  var weightEl   = $('gbnn-weights');
+
+  function init() {
+    W1 = SHAPES.map(function() {
+      return Array(H).fill(0).map(function() { return Math.random() * 0.4 - 0.2; });
+    });
+    W2 = Array(H).fill(0).map(function() {
+      return Array(SHAPES.length).fill(0).map(function() { return Math.random() * 0.4 - 0.2; });
+    });
+    W1prev = W1.map(function(r) { return r.slice(); });
+    W2prev = W2.map(function(r) { return r.slice(); });
+    stats = { correct: 0, wrong: 0, trials: 0 };
+    renderNodes();
+    renderWeights(null);
+    updateStats();
+    resetInteraction();
+    setExplain('Select a shape on the left to observe the signal flow through the network.');
+  }
+
+  function renderNodes() {
+    inputCol.innerHTML  = '<span class="gbnn-layer-label">Input</span>';
+    hiddenCol.innerHTML = '<span class="gbnn-layer-label">Hidden</span>';
+    outputCol.innerHTML = '<span class="gbnn-layer-label">Output</span>';
+    SHAPES.forEach(function(s, i) {
+      var n = document.createElement('div');
+      n.className   = 'gbnn-neuron gbnn-input';
+      n.textContent = s;
+      n.title       = SHAPE_NAMES[i] + ' – klicken';
+      n.addEventListener('click', function() { forward(i); });
+      inputCol.appendChild(n);
+    });
+    for (var h = 0; h < H; h++) {
+      var n = document.createElement('div');
+      n.className   = 'gbnn-neuron gbnn-hidden';
+      n.textContent = 'H' + (h + 1);
+      hiddenCol.appendChild(n);
+    }
+    SHAPES.forEach(function(s) {
+      var n = document.createElement('div');
+      n.className   = 'gbnn-neuron gbnn-output';
+      n.textContent = s;
+      outputCol.appendChild(n);
+    });
+  }
+
+  function forward(idx) {
+    lastIdx = idx;
+    stats.trials++;
+    updateStats();
+
+    hActs = W1[idx].map(function(w) { return sigmoid(w); });
+    oActs = SHAPES.map(function(_, o) {
+      var sum = 0;
+      for (var h = 0; h < H; h++) sum += hActs[h] * W2[h][o];
+      return sigmoid(sum);
+    });
+
+    var winner = 0;
+    oActs.forEach(function(v, i) { if (v > oActs[winner]) winner = i; });
+    var conf = (oActs[winner] * 100).toFixed(0);
+
+    inputCol.querySelectorAll('.gbnn-neuron').forEach(function(n, i) {
+      n.classList.toggle('gbnn-active', i === idx);
+    });
+    hiddenCol.querySelectorAll('.gbnn-neuron').forEach(function(n, i) {
+      n.classList.toggle('gbnn-firing', hActs[i] > 0.5);
+    });
+    outputCol.querySelectorAll('.gbnn-neuron').forEach(function(n, i) {
+      n.classList.remove('gbnn-winner', 'gbnn-active-out');
+      if (i === winner) n.classList.add('gbnn-winner');
+      else if (oActs[i] > 0.35) n.classList.add('gbnn-active-out');
+      n.style.opacity = (0.3 + oActs[i] * 0.7).toFixed(2);
+    });
+
+    statusEl.textContent = 'Prediction: ' + SHAPES[winner] + ' (' + conf + '% confidence)';
+    btnGroup.style.visibility = 'visible';
+    drawLines();
+    renderWeights(null);
+
+    var firingH = hActs.map(function(a, i) { return a > 0.5 ? 'H' + (i+1) : null; }).filter(Boolean);
+    var firingStr = firingH.length ? firingH.join(', ') : 'none';
+
+    setExplain(
+      'The signal <span class="gbnn-hl">' + SHAPES[idx] + '</span> activates the input neurons. ' +
+      'Active hidden neurons: <span class="gbnn-hl">' + firingStr + '</span>. ' +
+      'Winner: <span class="gbnn-hl">' + SHAPES[winner] + '</span> (' + conf + '%). ' +
+      (winner === idx
+        ? '<span class="gbnn-hl">The network is correct!</span>'
+        : '<span class="gbnn-warn">The network is wrong</span> – it should be ' + SHAPES[idx] + '.')
+    );
+  }
+
+  function train(isCorrect) {
+    if (lastIdx === -1) return;
+    W1prev = W1.map(function(r) { return r.slice(); });
+    W2prev = W2.map(function(r) { return r.slice(); });
+
+    var target = SHAPES.map(function(_, i) { return i === lastIdx ? 1 : 0; });
+    var deltaO = oActs.map(function(o, i) {
+      var err = (target[i] - o) * o * (1 - o);
+      // Nur das Ziel-Neuron und schwach die anderen — verhindert dass fremde Formen vergessen werden
+      return i === lastIdx ? err : err * 0.15;
+    });
+
+    for (var h = 0; h < H; h++) {
+      for (var o = 0; o < SHAPES.length; o++) {
+        W2[h][o] += LR * deltaO[o] * hActs[h];
+      }
+    }
+
+    var deltaH = Array(H).fill(0).map(function(_, h) {
+      var sum = 0;
+      for (var o = 0; o < SHAPES.length; o++) sum += deltaO[o] * W2[h][o];
+      return sum * hActs[h] * (1 - hActs[h]);
+    });
+
+    for (var h = 0; h < H; h++) {
+      W1[lastIdx][h] += LR * deltaH[h];
+    }
+
+    if (isCorrect) {
+      stats.correct++;
+      addLog('✓ ' + SHAPES[lastIdx] + ' recognised (' + SHAPE_NAMES[lastIdx] + ')', 'gbnn-log-ok');
+    } else {
+      stats.wrong++;
+      addLog('✗ Correction for ' + SHAPES[lastIdx] + ' (' + SHAPE_NAMES[lastIdx] + ')', 'gbnn-log-err');
+    }
+    updateStats();
+    renderWeights(lastIdx);
+
+    var biggestH = W1[lastIdx].reduce(function(max, w, i, arr) {
+      return Math.abs(w - W1prev[lastIdx][i]) > Math.abs(arr[max] - W1prev[lastIdx][max]) ? i : max;
+    }, 0);
+    var delta = W1[lastIdx][biggestH] - W1prev[lastIdx][biggestH];
+    var dir   = delta > 0 ? 'stronger' : 'weaker';
+    var sign  = delta > 0 ? '+' : '';
+
+    setExplain(
+      isCorrect
+        ? '<span class="gbnn-hl">Confirmed!</span> Weights adjusted slightly. Largest change: ' +
+          '<span class="gbnn-hl">W(' + SHAPES[lastIdx] + '→H' + (biggestH+1) + '): ' + sign + delta.toFixed(3) + '</span>.'
+        : '<span class="gbnn-warn">Correction!</span> Backpropagation is adjusting weights. ' +
+          'Connection <span class="gbnn-hl">W(' + SHAPES[lastIdx] + '→H' + (biggestH+1) + ')</span> became ' +
+          '<span class="gbnn-hl">' + dir + ' (' + sign + delta.toFixed(3) + ')</span>.'
+    );
+
+    if (isCorrect) {
+      setTimeout(function() {
+        resetInteraction();
+        setExplain('Well done! Select the next shape.');
+      }, 1800);
+    } else {
+      setTimeout(function() { forward(lastIdx); }, 400);
+    }
+  }
+
+  function renderWeights(activeInput) {
+    weightEl.innerHTML = '';
+    var header = document.createElement('div');
+    header.style.cssText = 'font-family:\'IBM Plex Mono\',monospace;font-size:0.58rem;color:#6b7280;display:flex;gap:8px;margin-bottom:6px;';
+    header.innerHTML = '<span style="width:86px">Connection</span><span style="flex:1">Strength</span><span style="width:46px;text-align:right">Value</span><span style="width:54px;text-align:right">Δ Chg.</span>';
+    weightEl.appendChild(header);
+
+    SHAPES.forEach(function(s, i) {
+      W1[i].forEach(function(w, h) {
+        if (activeInput !== null && i !== activeInput) return;
+        var prev     = W1prev[i][h];
+        var delta    = w - prev;
+        var deltaStr = delta === 0 ? '' : (delta > 0 ? '▲ +' : '▼ ') + Math.abs(delta).toFixed(3);
+        var dColor   = delta > 0 ? '#059669' : delta < 0 ? '#dc2626' : '#6b7280';
+        var pct      = Math.min(100, Math.abs(w) * 100);
+        var barLeft  = w >= 0 ? '50%' : (50 - pct/2) + '%';
+        var barW     = (pct/2) + '%';
+        var barColor = w >= 0 ? '#059669' : '#dc2626';
+        var valColor = w >= 0 ? '#059669' : '#dc2626';
+
+        var row = document.createElement('div');
+        row.className = 'gbnn-weight-row';
+        row.innerHTML =
+          '<span class="gbnn-w-label">' + s + '→H' + (h+1) + '</span>' +
+          '<div class="gbnn-w-bar-bg">' +
+            '<div class="gbnn-w-bar-fill" style="left:' + barLeft + ';width:' + barW + ';background:' + barColor + ';opacity:0.6;"></div>' +
+            '<div class="gbnn-w-midline"></div>' +
+          '</div>' +
+          '<span class="gbnn-w-val" style="color:' + valColor + '">' + w.toFixed(3) + '</span>' +
+          '<span class="gbnn-w-delta" style="color:' + dColor + '">' + deltaStr + '</span>';
+        weightEl.appendChild(row);
+      });
+    });
+
+    if (activeInput === null) {
+      var hint = document.createElement('div');
+      hint.style.cssText = 'font-size:0.62rem;color:#6b7280;margin-top:8px;font-family:\'IBM Plex Mono\',monospace;';
+      hint.textContent = '← Select a shape for details';
+      weightEl.appendChild(hint);
+    }
+  }
+
+  function drawLines() {
+    svgEl.innerHTML = '';
+    if (lastIdx === -1) return;
+    var rect = canvasEl.getBoundingClientRect();
+
+    var winner = 0;
+    oActs.forEach(function(v, i) { if (v > oActs[winner]) winner = i; });
+
+    var inNodes  = inputCol.querySelectorAll('.gbnn-neuron');
+    var hidNodes = hiddenCol.querySelectorAll('.gbnn-neuron');
+    var outNodes = outputCol.querySelectorAll('.gbnn-neuron');
+
+    function makeLine(n1, n2, color, width, opacity) {
+      var b1 = n1.getBoundingClientRect();
+      var b2 = n2.getBoundingClientRect();
+      var l  = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', b1.left + b1.width/2  - rect.left);
+      l.setAttribute('y1', b1.top  + b1.height/2 - rect.top);
+      l.setAttribute('x2', b2.left + b2.width/2  - rect.left);
+      l.setAttribute('y2', b2.top  + b2.height/2 - rect.top);
+      l.setAttribute('stroke',         color);
+      l.setAttribute('stroke-width',   String(width));
+      l.setAttribute('stroke-opacity', String(opacity));
+      l.setAttribute('stroke-linecap', 'round');
+      svgEl.appendChild(l);
+    }
+
+    // Pass 1: all non-winner connections — coloured (green/red) but thin+transparent
+    hidNodes.forEach(function(hNode, hi) {
+      var w     = W1[lastIdx][hi];
+      var flow  = Math.abs(w) * 1;
+      var color = w >= 0 ? '#059669' : '#dc2626';
+      makeLine(inNodes[lastIdx], hNode, color, Math.max(0.5, flow * 5), 0.25);
+    });
+    hidNodes.forEach(function(hNode, hi) {
+      outNodes.forEach(function(oNode, oi) {
+        if (oi === winner) return;
+        var w     = W2[hi][oi];
+        var flow  = Math.abs(w) * hActs[hi];
+        var color = w >= 0 ? '#059669' : '#dc2626';
+        makeLine(hNode, oNode, color, Math.max(0.5, flow * 5), 0.2);
+      });
+    });
+
+    // Pass 2: winner path — always green, clearly thicker and bright
+    hidNodes.forEach(function(hNode, hi) {
+      var w      = W1[lastIdx][hi];
+      var flow   = Math.abs(w);
+      var color  = w >= 0 ? '#059669' : '#dc2626';
+      makeLine(inNodes[lastIdx], hNode, color, Math.max(2, flow * 10), 0.75);
+    });
+    hidNodes.forEach(function(hNode, hi) {
+      var w     = W2[hi][winner];
+      var flow  = Math.abs(w) * hActs[hi];
+      makeLine(hNode, outNodes[winner], '#059669', Math.max(3, flow * 12), 0.92);
+    });
+  }
+
+  function resetInteraction() {
+    lastIdx = -1;
+    svgEl.innerHTML = '';
+    inputCol.querySelectorAll('.gbnn-neuron').forEach(function(n) { n.classList.remove('gbnn-active'); });
+    hiddenCol.querySelectorAll('.gbnn-neuron').forEach(function(n) { n.classList.remove('gbnn-firing'); });
+    outputCol.querySelectorAll('.gbnn-neuron').forEach(function(n) {
+      n.classList.remove('gbnn-winner', 'gbnn-active-out');
+      n.style.opacity = '0.5';
+    });
+    btnGroup.style.visibility = 'hidden';
+    statusEl.textContent = 'Select a shape…';
+    renderWeights(null);
+  }
+
+  function setExplain(html) { explainEl.innerHTML = html; }
+
+  function addLog(msg, cls) {
+    var d = document.createElement('div');
+    d.innerHTML = '<span class="' + cls + '">' + msg + '</span>';
+    logEl.appendChild(d);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function updateStats() {
+    $('gbnn-stat-correct').textContent = stats.correct;
+    $('gbnn-stat-wrong').textContent   = stats.wrong;
+    $('gbnn-stat-trials').textContent  = stats.trials;
+    $('gbnn-stat-acc').textContent = stats.trials > 0
+      ? Math.round((stats.correct / stats.trials) * 100) + '%'
+      : '—';
+  }
+
+  btnCorrect.addEventListener('click', function() { train(true); });
+  btnWrong.addEventListener('click',   function() { train(false); });
+  btnReset.addEventListener('click',   function() {
+    init();
+    addLog('—— Network reset ——', 'gbnn-log-info');
+  });
+  window.addEventListener('resize', function() {
+    if (lastIdx !== -1) drawLines();
+  });
+
+  init();
+})();
+</script>
